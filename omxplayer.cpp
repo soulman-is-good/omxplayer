@@ -27,6 +27,7 @@
 #include <sys/ioctl.h>
 #include <getopt.h>
 #include <string.h>
+#include <X11/Xlib.h>
 
 #define AV_NOWARN_DEPRECATED
 
@@ -521,6 +522,7 @@ int main(int argc, char *argv[])
   double                startpts              = 0;
   CRect                 DestRect              = {0,0,0,0};
   bool                  m_blank_background    = false;
+  bool                  m_fullscreen          = false;
   bool sentStarted = false;
   float audio_fifo_size = 0.0; // zero means use default
   float video_fifo_size = 0.0;
@@ -568,6 +570,7 @@ int main(int argc, char *argv[])
   const int anaglyph_opt    = 0x20d;
   const int native_deinterlace_opt = 0x20e;
   const int display_opt     = 0x20f;
+  const int fullscreen_opt     = 0x210;
 
   struct option longopts[] = {
     { "info",         no_argument,        NULL,          'i' },
@@ -621,6 +624,7 @@ int main(int argc, char *argv[])
     { "loop",         no_argument,        NULL,          loop_opt },
     { "layer",        required_argument,  NULL,          layer_opt },
     { "display",      required_argument,  NULL,          display_opt },
+    { "fullscreen",   no_argument,        NULL,          fullscreen_opt },
     { 0, 0, 0, 0 }
   };
 
@@ -762,6 +766,15 @@ int main(int argc, char *argv[])
         break;
       case pos_opt:
   sscanf(optarg, "%f %f %f %f", &DestRect.x1, &DestRect.y1, &DestRect.x2, &DestRect.y2);
+        break;
+      case fullscreen_opt:
+        m_fullscreen = true;
+	Display* disp = XOpenDisplay(NULL);
+	Screen*  scrn = DefaultScreenOfDisplay(disp);
+        DestRect.x1 = 0;
+        DestRect.y1 = 0;
+        DestRect.x2 = scrn->width;
+        DestRect.y2 = scrn->height;
         break;
       case vol_opt:
 	m_Volume = atoi(optarg);
